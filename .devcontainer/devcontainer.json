@@ -1,0 +1,17 @@
+{ 
+    "name": "gitlab-pages-api",
+
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+				"golang.go",
+			]
+        }
+    },
+
+    "remoteUser": "root"
+}
