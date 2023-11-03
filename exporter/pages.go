@@ -121,26 +121,41 @@ func (g *GitlabPagesExporter) setCustomDomainMetrics(domain *gitlab.PagesDomain)
 }
 
 func (g *GitlabPagesExporter) setProjectPagesMetrics(project *gitlab.Project) {
-	url := fmt.Sprintf("%s/pages", project.WebURL)
+
+	hasPagesJob := 0.0
 	check := "succeeded"
-	value := 0.0
-	resp, err := g.httpClient.Get(url)
-	if err != nil {
-		log.Printf("ERROR: Failed to get /pages for project %s: %s", project.WebURL, err)
-		check = "failed"
+
+	if string(project.BuildsAccessLevel) != "disabled" && string(project.PagesAccessLevel) != "disabled" {
+
+		jobs, _, err := g.gitlabClient.Jobs.ListProjectJobs(
+			project.ID,
+			&gitlab.ListJobsOptions{
+				ListOptions: gitlab.ListOptions{
+					PerPage: 20,
+				},
+				Scope: &[]gitlab.BuildStateValue{"success"},
+			},
+		)
+		if err != nil {
+			log.Printf("ERROR: Failed to get jobs (pages info) for project %s: %s", project.WebURL, err)
+			check = "failed"
+		} else {
+			for _, job := range jobs {
+				if job.Name == "pages" {
+					hasPagesJob = 1.0
+					break
+				}
+			}
+		}
 	}
-	if resp.StatusCode == http.StatusOK {
-		value = 1
-	} else if resp.StatusCode != http.StatusFound {
-		check = "failed"
-	}
+
 	g.projectPagesMetrics.WithLabelValues(
 		fmt.Sprintf("%d", project.ID),
 		project.Name,
 		project.WebURL,
 		string(project.PagesAccessLevel),
 		check,
-	).Set(value)
+	).Set(hasPagesJob)
 }
 
 func (g *GitlabPagesExporter) Run() {
@@ -148,6 +163,6 @@ func (g *GitlabPagesExporter) Run() {
 		log.Println("INFO: Starting new metrics collection")
 		go g.fetchCustomDomainMetrics()
 		go g.fetchProjectPagesMetrics()
-		time.Sleep(24 * time.Hour)
+		time.Sleep(48 * time.Hour)
 	}
 }
