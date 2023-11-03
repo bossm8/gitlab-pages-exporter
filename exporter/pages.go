@@ -91,7 +91,7 @@ func (g *GitlabPagesExporter) fetchProjectPagesMetrics() {
 		totalProjects = totalProjects + len(projects)
 	}
 	elapsed := time.Since(start)
-	log.Printf("INFO: Got %d projects in %s", totalProjects, elapsed)
+	log.Printf("INFO: Got %d projects in %s", totalProjects, elapsed.Round(time.Second))
 }
 
 func (g *GitlabPagesExporter) fetchCustomDomainMetrics() {
@@ -106,7 +106,7 @@ func (g *GitlabPagesExporter) fetchCustomDomainMetrics() {
 	}
 
 	elapsed := time.Since(start)
-	log.Printf("INFO: Got %d custom domains in %s", len(customDomains), elapsed)
+	log.Printf("INFO: Got %d custom domains in %s", len(customDomains), elapsed.Round(time.Second))
 }
 
 func (g *GitlabPagesExporter) setCustomDomainMetrics(domain *gitlab.PagesDomain) {
@@ -159,10 +159,7 @@ func (g *GitlabPagesExporter) setProjectPagesMetrics(project *gitlab.Project) {
 }
 
 func (g *GitlabPagesExporter) Run() {
-	for {
-		log.Println("INFO: Starting new metrics collection")
-		go g.fetchCustomDomainMetrics()
-		go g.fetchProjectPagesMetrics()
-		time.Sleep(48 * time.Hour)
-	}
+	log.Println("INFO: Starting new metrics collection")
+	go g.fetchCustomDomainMetrics()
+	go g.fetchProjectPagesMetrics()
 }
