@@ -24,8 +24,8 @@ func main() {
 
 	schedule := os.Getenv("GPE_CRON_SCHEDULE")
 	if schedule == "" {
-		log.Println("INFO: Setting GPE_CRON_SCHEDULE to default (0 2 * * *)")
-		schedule = "0 2 * * *"
+		log.Println("INFO: Setting GPE_CRON_SCHEDULE to default (0 0 2 * * *)")
+		schedule = "0 0 2 * * *"
 	}
 
 	exp := exporter.NewGitlabPagesExporter(apiUrl, token)
