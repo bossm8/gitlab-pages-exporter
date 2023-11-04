@@ -19,6 +19,7 @@ type GitlabPagesExporter struct {
 	projectPagesMetrics *prometheus.GaugeVec
 
 	checkState        *prometheus.GaugeVec
+	nextCheck         *prometheus.GaugeVec
 	lastCheckDuration *prometheus.GaugeVec
 	lastCheckTime     *prometheus.GaugeVec
 }
@@ -80,6 +81,13 @@ func NewGitlabPagesExporter(apiUrl string, adminToken string) *GitlabPagesExport
 			},
 			[]string{},
 		),
+		nextCheck: promauto.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "gpe_next_check_run",
+				Help: "When the next check is scheduled",
+			},
+			[]string{},
+		),
 	}
 }
 
@@ -94,6 +102,10 @@ func (g *GitlabPagesExporter) setRunning(running bool) {
 	} else {
 		g.checkState.WithLabelValues().Set(0.0)
 	}
+}
+
+func (g *GitlabPagesExporter) setNextRun(next int64) {
+	g.nextCheck.WithLabelValues().Set(float64(next))
 }
 
 func (g *GitlabPagesExporter) fetchProjectPagesMetrics() {
@@ -202,7 +214,8 @@ func (g *GitlabPagesExporter) setProjectPagesMetrics(project *gitlab.Project) {
 	).Set(hasPagesJob)
 }
 
-func (g *GitlabPagesExporter) Run() {
+func (g *GitlabPagesExporter) Run(next int64) {
+	g.setNextRun(next)
 	g.setRunning(true)
 	g.clear()
 

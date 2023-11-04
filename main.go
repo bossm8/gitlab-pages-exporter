@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/robfig/cron"
@@ -28,12 +29,23 @@ func main() {
 		schedule = "0 0 2 * * *"
 	}
 
+	sched, err := cron.Parse(schedule)
+	if err != nil {
+		log.Fatalf("ERROR: Could not parse cron schedule: %s", err)
+	}
+	next := sched.Next(time.Now()).UnixMilli()
+
 	exp := exporter.NewGitlabPagesExporter(apiUrl, token)
 	log.Println("INFO: Running initial gathering of GitLab pages information")
-	go exp.Run()
+	go exp.Run(next)
 
 	c := cron.New()
-	c.AddFunc(schedule, exp.Run)
+	if err = c.AddFunc(schedule, func() {
+		next = sched.Next(time.Now()).UnixMilli()
+		exp.Run(next)
+	}); err != nil {
+		log.Fatalf("ERROR: Could not start cron schedule: %s", err)
+	}
 	go c.Run()
 
 	log.Println("INFO: Starting metrics server at :2112")
