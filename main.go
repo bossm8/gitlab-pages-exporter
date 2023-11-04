@@ -33,7 +33,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("ERROR: Could not parse cron schedule: %s", err)
 	}
-	next := sched.Next(time.Now()).UnixMilli()
+	next := sched.Next(time.Now()).Unix()
 
 	exp := exporter.NewGitlabPagesExporter(apiUrl, token)
 	log.Println("INFO: Running initial gathering of GitLab pages information")
@@ -41,7 +41,7 @@ func main() {
 
 	c := cron.New()
 	if err = c.AddFunc(schedule, func() {
-		next = sched.Next(time.Now()).UnixMilli()
+		next = sched.Next(time.Now()).Unix()
 		exp.Run(next)
 	}); err != nil {
 		log.Fatalf("ERROR: Could not start cron schedule: %s", err)
