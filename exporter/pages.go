@@ -18,6 +18,7 @@ type GitlabPagesExporter struct {
 	customDomainMetrics *prometheus.GaugeVec
 	projectPagesMetrics *prometheus.GaugeVec
 
+	checkState        *prometheus.GaugeVec
 	lastCheckDuration *prometheus.GaugeVec
 	lastCheckTime     *prometheus.GaugeVec
 }
@@ -72,6 +73,26 @@ func NewGitlabPagesExporter(apiUrl string, adminToken string) *GitlabPagesExport
 			},
 			[]string{},
 		),
+		checkState: promauto.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "gpe_check_running",
+				Help: "Current check state",
+			},
+			[]string{},
+		),
+	}
+}
+
+func (g *GitlabPagesExporter) clear() {
+	g.customDomainMetrics.Reset()
+	g.projectPagesMetrics.Reset()
+}
+
+func (g *GitlabPagesExporter) setRunning(running bool) {
+	if running {
+		g.checkState.WithLabelValues().Set(1.0)
+	} else {
+		g.checkState.WithLabelValues().Set(0.0)
 	}
 }
 
@@ -182,7 +203,12 @@ func (g *GitlabPagesExporter) setProjectPagesMetrics(project *gitlab.Project) {
 }
 
 func (g *GitlabPagesExporter) Run() {
+	g.setRunning(true)
+	g.clear()
+
 	log.Println("INFO: Starting new metrics collection")
 	go g.fetchCustomDomainMetrics()
-	go g.fetchProjectPagesMetrics()
+	g.fetchProjectPagesMetrics()
+
+	g.setRunning(false)
 }
