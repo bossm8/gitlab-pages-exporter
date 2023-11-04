@@ -18,7 +18,8 @@ type GitlabPagesExporter struct {
 	customDomainMetrics *prometheus.GaugeVec
 	projectPagesMetrics *prometheus.GaugeVec
 
-	lastCheckMetrics *prometheus.GaugeVec
+	lastCheckDuration *prometheus.GaugeVec
+	lastCheckTime     *prometheus.GaugeVec
 }
 
 func NewGitlabPagesExporter(apiUrl string, adminToken string) *GitlabPagesExporter {
@@ -57,14 +58,19 @@ func NewGitlabPagesExporter(apiUrl string, adminToken string) *GitlabPagesExport
 				"url",
 			},
 		),
-		lastCheckMetrics: promauto.NewGaugeVec(
+		lastCheckDuration: promauto.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "gpe_last_check_duration_seconds",
-				Help: "Gitlab Exporter last check",
+				Help: "Last check duration",
 			},
-			[]string{
-				"when",
+			[]string{},
+		),
+		lastCheckTime: promauto.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "gpe_last_check_time_unix",
+				Help: "When the last check happened",
 			},
+			[]string{},
 		),
 	}
 }
@@ -107,7 +113,8 @@ func (g *GitlabPagesExporter) fetchProjectPagesMetrics() {
 }
 
 func (g *GitlabPagesExporter) setLastCheckMetrics(elapsed *time.Duration) {
-	g.lastCheckMetrics.WithLabelValues(fmt.Sprintf("%d", time.Now().Unix())).Set(elapsed.Seconds())
+	g.lastCheckDuration.WithLabelValues().Set(elapsed.Seconds())
+	g.lastCheckTime.WithLabelValues().SetToCurrentTime()
 }
 
 func (g *GitlabPagesExporter) fetchCustomDomainMetrics() {
