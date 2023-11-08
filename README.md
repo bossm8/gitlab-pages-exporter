@@ -44,6 +44,16 @@ recommended to use the docker image to run the exporter.
 | `GPE_CRON_SCHEDULE`            | Schedule for tests in cron format (seconds, minutes, hours, day of month, month, day of week).                                                               | `0 0 2 * * *` |
 | `GPE_SET_ALL_PROJECT_METRICS`  | If all projects should be exposed as metric, by default only project with pages deployed are exposed. Only set to true if really needed as this grows quick! | `false`       |
 
+```bash
+docker run -it --rm \
+           -e GPE_GITLAB_ADMIN_READ_TOKEN=<TOKEN> \
+           -e GPE_GITLAB_API_URL=<URL> \
+           -e TZ=Europe/Zurich \
+           -p 2112:2112 \
+           ghcr.io/bossm8/gitlab-pages-exporter:latest
+```
+
+
 ## Grafana Dashboards
 
 Find an example dashboard in the `grafana` folder.
