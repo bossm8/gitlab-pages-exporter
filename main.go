@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +13,17 @@ import (
 	"gitlab.ti.bfh.ch/pages-api/exporter"
 )
 
+const version = "dev"
+
 func main() {
+
+	v := flag.Bool("v", false, "Print version info")
+	flag.Parse()
+
+	if *v {
+		println(version)
+		os.Exit(0)
+	}
 
 	token := os.Getenv("GPE_GITLAB_ADMIN_READ_TOKEN")
 	if token == "" {
@@ -48,7 +59,10 @@ func main() {
 	runScrape := func() {
 		next := sched.Next(time.Now())
 		exp.Run(next.Unix())
-		log.Printf("INFO: Next run scheduled in %.0f hours (%s)", next.Sub(time.Now()).Hours(), next.Local().Format("January 2, 2006 15:04:05"))
+		log.Printf("INFO: Next run scheduled in %.0f hours (%s)",
+			next.Sub(time.Now()).Hours(),
+			next.Local().Format("January 2, 2006 15:04:05"),
+		)
 	}
 
 	log.Println("INFO: Running initial scrape of GitLab pages information")
