@@ -1,4 +1,4 @@
-module gitlab.ti.bfh.ch/pages-api
+module github.com/bossm8/gitlab-pages-exporter
 
 go 1.21.3
 

@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/bossm8/gitlab-pages-exporter/exporter"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/robfig/cron"
-	"gitlab.ti.bfh.ch/pages-api/exporter"
 )
 
-const version = "dev"
+var version string = "dev"
 
 func main() {
 

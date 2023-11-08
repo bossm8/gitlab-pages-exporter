@@ -46,4 +46,4 @@ recommended to use the docker image to run the exporter.
 
 ## Author(s)
 
-- <bom8@bfh.ch>
+Originally developed at Bern University of Applied Sciences (TI): [BFH](https://www.bfh.ch/ti/en/)
