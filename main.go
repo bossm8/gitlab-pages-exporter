@@ -78,6 +78,7 @@ func main() {
 	go c.Run()
 
 	log.Println("INFO: Starting metrics server at :2112")
+	log.Println("INFO: Metrics will be served under /metrics")
 	http.Handle("/metrics", promhttp.Handler())
 	http.ListenAndServe(":2112", nil)
 }
