@@ -46,7 +46,10 @@ func main() {
 	if setAllMetricsStr != "" {
 		var err error
 		if setAllMetrics, err = strconv.ParseBool(setAllMetricsStr); err != nil {
-			log.Fatalf("ERROR: GPE_SET_ALL_PROJECT_METRICS must be valid boolean value")
+			log.Fatalf(
+				"ERROR: GPE_SET_ALL_PROJECT_METRICS must be valid boolean value, %s",
+				err,
+			)
 		}
 	}
 
