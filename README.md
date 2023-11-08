@@ -24,15 +24,18 @@ instance is and you might need to check your rate-limiting settings.
 
 The following metrics will be exposed to `:2112/metrics`:
 
-| Metric Name                               | Description                       |
-| ------------------------------------------|-----------------------------------|
-| `gpe_project_pages_enabled`               | If GitLab pages are enabled       |
-| `gpe_custom_domains_verified`             | If a custom Domain is verified    |
-| `gpe_projects_checked_total`              | Number of projects processed      |
-| `gpe_check_running`                       | If the check is currently running |
-| `gpe_last_check_duration_seconds`         | How long the last check took      |
-| `gpe_last_check_run_finished_seconds`     | When the last check happened      |
-| `gpe_next_check_run_scheduled_seconds`    | When the next check will happen   |
+| Metric Name                               | Description                                   |
+| ------------------------------------------|-----------------------------------------------|
+| `gpe_project_pages_enabled`               | If GitLab pages are enabled                   |
+| `gpe_project_pages_total`                 | Total number of projects with deployed pages  |
+| `gpe_custom_domains_verified`             | If a custom Domain is verified                |
+| `gpe_custom_domains_total`                | Total number of custom domains registered     |
+| `gpe_projects_checked_total`              | Number of projects processed                  |
+| `gpe_check_running`                       | If the check is currently running             |
+| `gpe_last_check_duration_seconds`         | How long the last check took                  |
+| `gpe_last_check_run_finished_seconds`     | When the last check happened                  |
+| `gpe_next_check_run_scheduled_seconds`    | When the next check will happen               |
+| `gpe_number_of_scrapes`                   | How many times the exporter ran since restart |
 
 ## Configuration
 

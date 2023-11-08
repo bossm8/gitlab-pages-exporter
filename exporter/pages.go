@@ -32,8 +32,14 @@ const (
 type exporterMetrics struct {
 	// Metric describing the custom domains added to pages deployments.
 	customDomains *prometheus.GaugeVec
-	// Metric describing which pages have pages deployed
+	// Metric describing which pages have pages deployed.
 	projectPages *prometheus.GaugeVec
+
+	// Additional metrics to show total numbers.
+	// These are required to show timeseries metrics as customDomains and
+	// projectPages get reset on each run.
+	customDomainsTotal *prometheus.GaugeVec
+	projectPagesTotal  *prometheus.GaugeVec
 
 	// Describes the current state of the exporter.
 	checkState *prometheus.GaugeVec
@@ -43,6 +49,9 @@ type exporterMetrics struct {
 	lastCheckTime *prometheus.GaugeVec
 	// Describes when the next check is scheduled.
 	nextCheckTime *prometheus.GaugeVec
+
+	// Metric holding the number of scrapes since the last restart.
+	numberOfScrapes *prometheus.CounterVec
 
 	// Holds the total number of projects which were checked. This metric
 	// is added because per default the exporter does not add projects which
@@ -98,6 +107,21 @@ func (m *exporterMetrics) setCustomDomainMetrics(domain *gitlab.PagesDomain) {
 		fmt.Sprintf("%d", domain.ProjectID),
 		domain.URL,
 	).Set(value)
+}
+
+// increaseNumberOfScrapes increases the scrape runs metric.
+func (m *exporterMetrics) increaseNumberOfScrapes() {
+	m.numberOfScrapes.WithLabelValues().Inc()
+}
+
+// setTotalCustomDomains sets the number of custom domains to total.
+func (m *exporterMetrics) setTotalCustomDomains(total *int) {
+	m.customDomainsTotal.WithLabelValues().Set(float64(*total))
+}
+
+// setTotalProjectPages sets the number of projects with pages enabled to total.
+func (m *exporterMetrics) setTotalProjectPages(total *int) {
+	m.projectPagesTotal.WithLabelValues().Set(float64(*total))
 }
 
 // setProjectPagesMetrics exposes the the project passed as prometheus metric
@@ -173,11 +197,35 @@ func NewGitlabPagesExporter(
 					"pages_domain",
 				},
 			),
+			projectPagesTotal: promauto.NewGaugeVec(
+				prometheus.GaugeOpts{
+					Namespace: PrometheusNamespace,
+					Name:      "project_pages_total",
+					Help:      "Shows the total number of projects which have pages deployed",
+				},
+				[]string{},
+			),
+			customDomainsTotal: promauto.NewGaugeVec(
+				prometheus.GaugeOpts{
+					Namespace: PrometheusNamespace,
+					Name:      "custom_domains_total",
+					Help:      "Shows the total number of custom domains added",
+				},
+				[]string{},
+			),
 			projectsChecked: promauto.NewGaugeVec(
 				prometheus.GaugeOpts{
 					Namespace: PrometheusNamespace,
 					Name:      "projects_checked_total",
 					Help:      "How many projects have been processed",
+				},
+				[]string{},
+			),
+			numberOfScrapes: promauto.NewCounterVec(
+				prometheus.CounterOpts{
+					Namespace: PrometheusNamespace,
+					Name:      "number_of_scrapes",
+					Help:      "How many times the GitLab API was scraped since the last restart",
 				},
 				[]string{},
 			),
@@ -266,11 +314,12 @@ func (g *gitlabPagesExporter) handleProjectPages() {
 		Sort:    gitlab.String("asc"),
 		ListOptions: gitlab.ListOptions{
 			PerPage: 100,
-			Page:    1,
+			Page:    0,
 		},
 	}
 
 	totalProjects := 0
+	totalProjectPages := 0
 
 	for {
 		projects, resp, err := g.gitlabClient.Projects.ListProjects(projOpts)
@@ -286,6 +335,8 @@ func (g *gitlabPagesExporter) handleProjectPages() {
 				hasPagesJob, checkState := g.checkProjectForPagesJob(project)
 				if !hasPagesJob && !g.setMetricsForProjectsWithoutPages {
 					return
+				} else if hasPagesJob {
+					totalProjectPages += 1
 				}
 				g.metrics.setProjectPagesMetrics(project, hasPagesJob, checkState)
 			}(project)
@@ -299,18 +350,21 @@ func (g *gitlabPagesExporter) handleProjectPages() {
 		projOpts.Page = resp.NextPage
 		totalProjects = totalProjects + len(projects)
 
+		break
 		if resp.NextPage == 0 {
 			break
 		}
 	}
 
 	elapsed := time.Since(start)
-	log.Printf("INFO: Got %d projects in %s",
+	log.Printf("INFO: Got %d projects in %s of which %d have deployed pages",
 		totalProjects,
 		elapsed.Round(time.Second),
+		totalProjectPages,
 	)
 
 	g.metrics.setNumberOfProjects(&totalProjects)
+	g.metrics.setTotalProjectPages(&totalProjectPages)
 	g.metrics.setLastCheckMetrics(&elapsed)
 }
 
@@ -329,8 +383,10 @@ func (g *gitlabPagesExporter) handleCustomDomains() {
 	}
 
 	elapsed := time.Since(start)
+	totalCustomDomains := len(customDomains)
+	g.metrics.setTotalCustomDomains(&totalCustomDomains)
 	log.Printf("INFO: Got %d custom domains in %s",
-		len(customDomains),
+		totalCustomDomains,
 		elapsed.Round(time.Second),
 	)
 }
@@ -349,4 +405,5 @@ func (g *gitlabPagesExporter) Run(next int64) {
 	g.handleProjectPages()
 
 	g.metrics.setCheckStateFinished()
+	g.metrics.increaseNumberOfScrapes()
 }
