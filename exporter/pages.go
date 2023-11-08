@@ -350,7 +350,6 @@ func (g *gitlabPagesExporter) handleProjectPages() {
 		projOpts.Page = resp.NextPage
 		totalProjects = totalProjects + len(projects)
 
-		break
 		if resp.NextPage == 0 {
 			break
 		}
