@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -29,21 +30,32 @@ func main() {
 		schedule = "0 0 2 * * *"
 	}
 
+	setAllMetrics := false
+	setAllMetricsStr := os.Getenv("GPE_SET_ALL_PROJECT_METRICS")
+	if setAllMetricsStr != "" {
+		var err error
+		if setAllMetrics, err = strconv.ParseBool(setAllMetricsStr); err != nil {
+			log.Fatalf("ERROR: GPE_SET_ALL_PROJECT_METRICS must be valid boolean value")
+		}
+	}
+
 	sched, err := cron.Parse(schedule)
 	if err != nil {
 		log.Fatalf("ERROR: Could not parse cron schedule: %s", err)
 	}
-	next := sched.Next(time.Now()).Unix()
 
-	exp := exporter.NewGitlabPagesExporter(apiUrl, token)
-	log.Println("INFO: Running initial gathering of GitLab pages information")
-	go exp.Run(next)
+	exp := exporter.NewGitlabPagesExporter(apiUrl, token, setAllMetrics)
+	runScrape := func() {
+		next := sched.Next(time.Now())
+		exp.Run(next.Unix())
+		log.Printf("INFO: Next run scheduled in %.0f hours (%s)", next.Sub(time.Now()).Hours(), next.Local().Format("January 2, 2006 15:04:05"))
+	}
+
+	log.Println("INFO: Running initial scrape of GitLab pages information")
+	go runScrape()
 
 	c := cron.New()
-	if err = c.AddFunc(schedule, func() {
-		next = sched.Next(time.Now()).Unix()
-		exp.Run(next)
-	}); err != nil {
+	if err = c.AddFunc(schedule, runScrape); err != nil {
 		log.Fatalf("ERROR: Could not start cron schedule: %s", err)
 	}
 	go c.Run()
