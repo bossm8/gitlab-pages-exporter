@@ -27,7 +27,7 @@ The following metrics will be exposed to `:2112/metrics`:
 | Metric Name                               | Description                       |
 | ------------------------------------------|-----------------------------------|
 | `gpe_project_pages_enabled`               | If GitLab pages are enabled       |
-| `gpe_custom_Domains_verified`             | If a custom Domain is verified    |
+| `gpe_custom_domains_verified`             | If a custom Domain is verified    |
 | `gpe_projects_checked_total`              | Number of projects processed      |
 | `gpe_check_running`                       | If the check is currently running |
 | `gpe_last_check_duration_seconds`         | How long the last check took      |
