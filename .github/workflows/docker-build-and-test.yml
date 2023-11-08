@@ -37,10 +37,10 @@ jobs:
       
       - name: Set Image Tag
         run: |
-          if [[ ${{ env.GITHUB_REF_NAME }} == "main" ]]; then
+          if [[ ${{ github.ref_name }} == "main" ]]; then
             echo "IMAGE_TAG=latest" >> $GITHUB_ENV
-          elif [[ ${{ env.GITHUB_REF_NAME }} =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
-            echo "IMAGE_TAG=${{ env.GITHUB_REF_NAME }}" >> $GITHUB_ENV
+          elif [[ ${{ github.ref_name }} =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
+            echo "IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
           else
             echo "IMAGE_TAG=dev" >> $GITHUB_ENV
           fi
