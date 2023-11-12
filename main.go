@@ -11,6 +11,8 @@ import (
 	"github.com/bossm8/gitlab-pages-exporter/exporter"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/robfig/cron"
+
+	_ "go.uber.org/automaxprocs"
 )
 
 var version string = "dev"
