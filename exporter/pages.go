@@ -341,6 +341,7 @@ func (g *gitlabPagesExporter) handleProjectPages() {
 				g.metrics.setProjectPagesMetrics(project, hasPagesJob, checkState)
 			}(project)
 		}
+		wg.Wait()
 
 		log.Printf("INFO: Handled %d of %d pages à %d projects",
 			resp.CurrentPage,
