@@ -5,7 +5,7 @@ go 1.21.3
 require (
 	github.com/prometheus/client_golang v1.19.0
 	github.com/robfig/cron v1.2.0
-	github.com/xanzy/go-gitlab v0.99.0
+	github.com/xanzy/go-gitlab v0.103.0
 	go.uber.org/automaxprocs v1.5.3
 )
 
