@@ -3,7 +3,7 @@ module github.com/bossm8/gitlab-pages-exporter
 go 1.21.3
 
 require (
-	github.com/prometheus/client_golang v1.19.0
+	github.com/prometheus/client_golang v1.19.1
 	github.com/robfig/cron v1.2.0
 	github.com/xanzy/go-gitlab v0.103.0
 	go.uber.org/automaxprocs v1.5.3
@@ -21,8 +21,8 @@ require (
 	github.com/prometheus/procfs v0.12.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/oauth2 v0.16.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.32.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 )
