@@ -6,7 +6,7 @@ require (
 	github.com/prometheus/client_golang v1.20.4
 	github.com/robfig/cron v1.2.0
 	github.com/xanzy/go-gitlab v0.109.0
-	go.uber.org/automaxprocs v1.5.3
+	go.uber.org/automaxprocs v1.6.0
 )
 
 require (
