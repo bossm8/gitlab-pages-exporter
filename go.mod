@@ -3,7 +3,7 @@ module github.com/bossm8/gitlab-pages-exporter
 go 1.21.3
 
 require (
-	github.com/prometheus/client_golang v1.20.4
+	github.com/prometheus/client_golang v1.20.5
 	github.com/robfig/cron v1.2.0
 	github.com/xanzy/go-gitlab v0.110.0
 	go.uber.org/automaxprocs v1.6.0
